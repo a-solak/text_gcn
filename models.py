@@ -1,6 +1,6 @@
 from layers import *
 from metrics import *
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS
@@ -170,11 +170,14 @@ class GCN(Model):
                                             sparse_inputs=True,
                                             logging=self.logging))
 
+        # featureless=True,
+        # sparse_inputs=True,
+
         self.layers.append(GraphConvolution(input_dim=FLAGS.hidden1,
                                             output_dim=self.output_dim,
                                             placeholders=self.placeholders,
                                             act=lambda x: x, #
-                                            dropout=True,
+                                            dropout=False,
                                             logging=self.logging))
 
     def predict(self):

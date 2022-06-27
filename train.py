@@ -2,7 +2,7 @@ from __future__ import division
 from __future__ import print_function
 
 import time
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 
 from sklearn import metrics
 from utils import *
@@ -10,15 +10,23 @@ from models import GCN, MLP
 import random
 import os
 import sys
+import time
+
+strt = time.time()
+
+tf.disable_eager_execution()
 
 if len(sys.argv) != 2:
 	sys.exit("Use: python train.py <dataset>")
 
-datasets = ['20ng', 'R8', 'R52', 'ohsumed', 'mr']
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"  # "0"
+print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
+
+datasets = ['twitter', 'twitter_large', '20ng', 'R8', 'R52', 'ohsumed', 'mr']
 dataset = sys.argv[1]
 
 if dataset not in datasets:
-	sys.exit("wrong dataset name")
+    sys.exit("wrong dataset name")
 
 
 # Set random seed
@@ -27,7 +35,6 @@ np.random.seed(seed)
 tf.set_random_seed(seed)
 
 # Settings
-os.environ["CUDA_VISIBLE_DEVICES"] = ""
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS
@@ -35,13 +42,13 @@ FLAGS = flags.FLAGS
 flags.DEFINE_string('dataset', dataset, 'Dataset string.')
 # 'gcn', 'gcn_cheby', 'dense'
 flags.DEFINE_string('model', 'gcn', 'Model string.')
-flags.DEFINE_float('learning_rate', 0.02, 'Initial learning rate.')
+flags.DEFINE_float('learning_rate', 0.01, 'Initial learning rate.')
 flags.DEFINE_integer('epochs', 200, 'Number of epochs to train.')
-flags.DEFINE_integer('hidden1', 200, 'Number of units in hidden layer 1.')
+flags.DEFINE_integer('hidden1', 400, 'Number of units in hidden layer 1.')
 flags.DEFINE_float('dropout', 0.5, 'Dropout rate (1 - keep probability).')
 flags.DEFINE_float('weight_decay', 0,
                    'Weight for L2 loss on embedding matrix.')  # 5e-4
-flags.DEFINE_integer('early_stopping', 10,
+flags.DEFINE_integer('early_stopping', 20,
                      'Tolerance for early stopping (# of epochs).')
 flags.DEFINE_integer('max_degree', 3, 'Maximum Chebyshev polynomial degree.')
 
@@ -105,6 +112,11 @@ def evaluate(features, support, labels, mask, placeholders):
 sess.run(tf.global_variables_initializer())
 
 cost_val = []
+
+for i, l in enumerate(model.layers):
+    print('layer i: ', l)
+
+print(model.layers[0].embedding)
 
 # Train model
 for epoch in range(FLAGS.epochs):
@@ -201,3 +213,5 @@ doc_embeddings_str = '\n'.join(doc_vectors)
 f = open('data/' + dataset + '_doc_vectors.txt', 'w')
 f.write(doc_embeddings_str)
 f.close()
+
+print('total time: ', time.time()-strt)

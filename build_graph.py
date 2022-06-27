@@ -11,16 +11,19 @@ from nltk.corpus import wordnet as wn
 from sklearn.feature_extraction.text import TfidfVectorizer
 import sys
 from scipy.spatial.distance import cosine
+import time
+
+strt = time.time()
 
 if len(sys.argv) != 2:
-	sys.exit("Use: python build_graph.py <dataset>")
+    sys.exit("Use: python build_graph.py <dataset>")
 
-datasets = ['20ng', 'R8', 'R52', 'ohsumed', 'mr']
+datasets = ['twitter', 'twitter_large', '20ng', 'R8', 'R52', 'ohsumed', 'mr']
 # build corpus
 dataset = sys.argv[1]
 
 if dataset not in datasets:
-	sys.exit("wrong dataset name")
+    sys.exit("wrong dataset name")
 
 # Read Word Vectors
 # word_vector_file = 'data/glove.6B/glove.6B.300d.txt'
@@ -531,3 +534,5 @@ f.close()
 f = open("data/ind.{}.adj".format(dataset), 'wb')
 pkl.dump(adj, f)
 f.close()
+
+print('total time: ', time.time()-strt)

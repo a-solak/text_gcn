@@ -1,11 +1,44 @@
 #!/usr/bin/python
 #-*-coding:utf-8-*-
 
+import random
+
+random.seed(42)
+
+'''
 dataset_name = 'own'
 sentences = ['Would you like a plain sweater or something else?​', 'Great. We have some very nice wool slacks over here. Would you like to take a look?']
 labels = ['Yes' , 'No' ]
 train_or_test_list = ['train', 'test']
+'''
 
+dataset_name = 'twitter'
+
+n_data = []
+p_data = []
+
+# read positive and negative tweet data
+# use own path here
+with open('C:/Users/Ahmet/ETH_Master/FS 22/CIL/twitter_ds/twitter-datasets/train_neg.txt', encoding='utf-8') as f:
+    lines = f.read().splitlines()
+    n_data = lines
+print('read negative tweet lines ', len(n_data))
+
+with open('C:/Users/Ahmet/ETH_Master/FS 22/CIL/twitter_ds/twitter-datasets/train_pos.txt', encoding='utf-8') as f:
+    lines = f.read().splitlines()
+    p_data = lines
+print('read positive tweet lines ', len(p_data))
+
+random.shuffle(n_data)
+random.shuffle(p_data)
+
+# fill all tweet data and target labels
+tweet_train_data = p_data[:90000] + n_data[:90000]
+tweet_test_data = p_data[90000:] + n_data[90000:]
+sentences = tweet_train_data + tweet_test_data
+labels = ['positive' for _ in p_data[:90000]] + ['negative' for _ in n_data[:90000]] +\
+         ['positive' for _ in p_data[90000:]] + ['negative' for _ in n_data[90000:]]
+train_or_test_list = ['train' for _ in tweet_train_data] + ['test' for _ in tweet_test_data]
 
 meta_data_list = []
 

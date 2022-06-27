@@ -298,3 +298,109 @@ def clean_str(string):
     string = re.sub(r"\?", " \? ", string)
     string = re.sub(r"\s{2,}", " ", string)
     return string.strip().lower()
+
+
+'''
+--------------------------------------------------------------------------
+
+author: Ahmet Solak
+CIL Project twitter utils
+
+--------------------------------------------------------------------------
+'''
+
+
+def clean_str_twitter(string):
+    """
+    Tokenization/string cleaning for all datasets except for SST.
+    Original taken from https://github.com/yoonkim/CNN_sentence/blob/master/process_data.py
+    """
+    # string = re.sub(r"[^A-Za-z0-9(),!?\'\`]", " ", string)
+    # string = re.sub(r"\'s", " \'s", string)
+    # string = re.sub(r"\'ve", "\'ve", string)
+    # string = re.sub(r"n\'t", " n\'t", string)
+    # string = re.sub(r"\'re", " \'re", string)
+    # string = re.sub(r"\'d", " \'d", string)
+    # string = re.sub(r"\'ll", " \'ll", string)
+    string = re.sub(r",", " ", string)
+    string = re.sub(r"!", " ! ", string)
+    string = re.sub(r"\"", " ", string)
+    # string = re.sub(r"\(", " \( ", string)
+    # string = re.sub(r"\)", " \) ", string)
+    string = re.sub(r"\?", " ? ", string)
+    string = re.sub(r"\s{2,}", " ", string)
+    return string.strip()
+    # return string.strip().lower()
+
+# some spellcheck functions
+# edit functions from peter norvig
+def edits1(word):
+    "All edits that are one edit away from `word`."
+    letters = 'abcdefghijklmnopqrstuvwxyz'
+    splits = [(word[:i], word[i:]) for i in range(len(word) + 1)]
+    deletes = [L + R[1:] for L, R in splits if R]
+    transposes = [L + R[1] + R[0] + R[2:] for L, R in splits if len(R)>1]
+    replaces = [L + c + R[1:] for L, R in splits if R for c in letters]
+    inserts = [L + c + R for L, R in splits for c in letters]
+    return deletes + transposes + replaces + inserts
+
+def edits2(word):
+    "All edits that are two edits away from `word`."
+    return (e2 for e1 in edits1(word) for e2 in edits1(e1))
+
+def spellcheck(word, wordfreq, freq_thresh, len_thresh):
+    '''
+    word: wrong spelled word in question
+    wordfreq: word frequency dictionary
+    feq_thresh: how frequent should new word be
+    returns: list of new candidate words
+    '''
+    candidates = []
+    # delete all special chars and see if word is common
+    new_word = re.sub(r"[^A-Za-z0-9]", "", word)
+    if new_word in wordfreq:
+        if wordfreq[new_word] >= freq_thresh:
+            candidates.append(new_word)
+    # delete "-" and seperate words to see if seperately, they are candidates
+    split_candidates = []
+    new_words = word.split("-")
+    for w in new_words:
+        if w in wordfreq and len(w) > 1:
+            if wordfreq[w] >= freq_thresh:
+                split_candidates.append(w)
+    if len(split_candidates) >= 2:
+        return split_candidates
+    # check if edit distance sensible and which new words are common enough
+    new_words_1 = list(edits1(word))
+    # new_words_2 = list(edits2(word))
+    max_freq = freq_thresh-1
+    for w in new_words_1:  # + new_words_2:
+        if w in wordfreq:
+            if len(w) >= len_thresh:
+                if wordfreq[w] > max_freq:
+                    candidates.append(w)
+                    max_freq = wordfreq[w]
+    # delete all duplicate chars and return potential new word
+    single_chars = []
+    for i, c in enumerate(word):
+        if i < len(word)-1:
+            if c != word[i+1]:
+                single_chars.append(c)
+        else:
+            single_chars.append(c)
+    new_word = ''.join(single_chars)
+    if new_word in wordfreq:
+        if wordfreq[new_word] >= freq_thresh:
+            candidates.append(new_word)
+    # take most frequent word
+    max_freq = 0
+    max_cand = None
+    for c in candidates:
+        if wordfreq[c] > max_freq:
+            max_cand = c
+            max_freq = wordfreq[c]
+    if max_cand is None:
+        return []
+    else:
+        return [max_cand]
+
