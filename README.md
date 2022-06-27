@@ -20,8 +20,8 @@ Tensorflow >= 1.4.0
 
 3. Run `python train.py twitter`
 
-4. Change `twitter` in above 3 command lines to 'twitter large'. Other possible datasets are: '20ng', 'R8', 'R52', 'ohsumed' and 'mr' when producing results for other datasets.
+4. Change `twitter` in above 3 command lines to `twitter large`. Other (less relevant) possible datasets are: `20ng`, `R8`, `R52`, `ohsumed` and `mr` when producing results for other datasets.
 
 ## Preprocessing
 
-Preprocessing can be done in 'remove_words.py' and some preprocessing functions such as spellchecking are included in 'utils.py'.
+Preprocessing can be done in `remove_words.py` and some preprocessing functions such as spellchecking are included in `utils.py`.
